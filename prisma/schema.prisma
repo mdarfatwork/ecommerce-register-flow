@@ -1,0 +1,27 @@
+// schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  firebaseUid String
+  name     String
+  email    String @unique
+  password String
+  createdAt DateTime @default(now())
+}
+
+model UserInterest {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  interests Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

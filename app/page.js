@@ -1,113 +1,181 @@
-import Image from "next/image";
+"use client";
+import React, { useEffect, useState, useMemo } from "react";
+import { FaCheck } from "react-icons/fa";
+import {
+  MdKeyboardArrowLeft,
+  MdKeyboardArrowRight,
+  MdOutlineKeyboardDoubleArrowLeft,
+  MdOutlineKeyboardDoubleArrowRight,
+} from "react-icons/md";
+import withAuth from "@/components/withAuth";
+import { auth } from "@/firebase";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
+const Home = () => {
+  const categoriesPerPage = 6;
+  const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [userEmail, setUserEmail] = useState(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      try {
+        const user = await auth.currentUser;
+        if(user) {
+          setUserEmail(user.email);
+        } else {
+          router.push("/login")
+        }
+      } catch (error) {
+        console.error("Error fetching user email:", error);
+      }
+    };
+
+    fetchUserEmail();
+  }, []);
+
+  useEffect(() => {
+    if (userEmail) {
+      const getInterest = async () => {
+        try {
+          const res = await fetch(`/api/userInterest`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: userEmail }),
+          });
+
+          if (res.ok) {
+            const result = await res.json();
+            setCategories(result.userInterest.interests);
+          } else {
+            console.error("Failed to fetch user interests");
+          }
+        } catch (error) {
+          console.error("Error fetching user interests:", error);
+        }
+      };
+
+      getInterest();
+    }
+  }, [userEmail]);
+
+  const totalPages = useMemo(() => Math.ceil(categories.length / categoriesPerPage), [categories.length]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleDoubleArrowLeft = () => {
+    setCurrentPage((prev) => Math.max(prev - 6, 1));
+  };
+
+  const handleDoubleArrowRight = () => {
+    setCurrentPage((prev) => Math.min(prev + 6, totalPages));
+  };
+
+  const getPageNumbers = useMemo(() => {
+    if (totalPages <= 8) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    } else {
+      let startPage = currentPage <= totalPages - 6 ? currentPage : totalPages - 6;
+      const pages = Array.from({ length: 7 }, (_, i) => startPage + i);
+      if (startPage > 1) pages.unshift("...");
+      if (startPage + 6 < totalPages) pages.push("...");
+      return pages;
+    }
+  }, [currentPage, totalPages]);
+
+  const visibleCategories = useMemo(() => {
+    return categories.slice(
+      (currentPage - 1) * categoriesPerPage,
+      currentPage * categoriesPerPage
+    );
+  }, [categories, currentPage, categoriesPerPage]);
+
+  const handleCategoryClick = async (id) => {
+    setCategories((prevCategories) =>
+      prevCategories.map((category) =>
+        category.id === id ? { ...category, checked: !category.checked } : category
+      )
+    );
+    if (userEmail) {
+      try {
+        const res = await fetch(`/api/updateCategory`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: userEmail, id }),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to update category");
+        }
+      } catch (error) {
+        console.error("Error updating category:", error);
+      }
+    }
+  };
+
+  if (categories.length === 0) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="w-screen flex justify-center">
+      <hr className="w-6 md:w-8 lg:w-10 border-[1.5px] hidden sm:block mt-28 md:mt-32 lg:mt-36 xl:mt-40" />
+    <div className="w-11/12 sm:w-10/12 md:w-3/4 lg:w-3/5 xl:w-2/4 2xl:w-2/5 max-w-[500px] my-5 lg:my-7 rounded-xl lg:rounded-2xl border-2 p-5 md:p-7 lg:p-10 flex flex-col gap-3 justify-between items-center text-center">
+      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold">Please mark your interests!</h2>
+      <span className="my-2">We will keep you notified.</span>
+      <ul className="w-full flex flex-col gap-3 lg:gap-4 text-left">
+        <p className="text-lg lg:text-xl font-bold pb-2 lg:pb-3">My saved interests!</p>
+        {visibleCategories.map((category) => (
+          <li key={category.id} className="flex gap-2 md:gap-3 lg:gap-4 items-center text-base md:text-lg">
+            <span
+              onClick={() => handleCategoryClick(category.id)}
+              className={`${
+                category.checked ? "bg-black text-white" : "bg-gray-300 text-gray-300"
+              } p-1 rounded-md cursor-pointer font-semibold`}
+            >
+              <FaCheck />
+            </span>
+            <span>{category.category}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="flex w-full items-center text-gray-400 my-5 sm:my-7 md:my-9 lg:my-11">
+        <MdOutlineKeyboardDoubleArrowLeft
+          className={`text-3xl cursor-pointer ${currentPage === 1 ? "opacity-50" : ""}`}
+          onClick={handleDoubleArrowLeft}
+        />
+        <MdKeyboardArrowLeft
+          className={`text-3xl cursor-pointer ${currentPage === 1 ? "opacity-50" : ""}`}
+          onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+        />
+        {getPageNumbers.map((page, index) => (
+          <p
+            key={index}
+            className={`cursor-pointer text-lg mx-1 ${page === currentPage ? "text-black font-semibold" : "text-gray-400"}`}
+            onClick={() => typeof page === "number" && handlePageChange(page)}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+            {page}
+          </p>
+        ))}
+        <MdKeyboardArrowRight
+          className={`text-3xl cursor-pointer ${currentPage === totalPages ? "opacity-50" : ""}`}
+          onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+        />
+        <MdOutlineKeyboardDoubleArrowRight
+          className={`text-3xl cursor-pointer ${currentPage === totalPages ? "opacity-50" : ""}`}
+          onClick={handleDoubleArrowRight}
         />
       </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
+    </div>
   );
-}
+};
+
+export default withAuth(Home);
