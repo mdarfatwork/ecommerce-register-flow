@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/firebase';
 
-const WithAuth = (WrappedComponent) => {
-  return (props) => {
+const withAuth = (WrappedComponent) => {
+  const WithAuthComponent = (props) => {
     const [loading, setLoading] = useState(true);
     const [authenticated, setAuthenticated] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-      auth.onAuthStateChanged((user) => {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
         if (user) {
           setAuthenticated(true);
         } else {
@@ -18,6 +18,8 @@ const WithAuth = (WrappedComponent) => {
         }
         setLoading(false);
       });
+
+      return () => unsubscribe(); // Cleanup subscription on unmount
     }, [router]);
 
     if (loading) {
@@ -30,6 +32,15 @@ const WithAuth = (WrappedComponent) => {
 
     return <WrappedComponent {...props} />;
   };
+
+  WithAuthComponent.displayName = `WithAuth(${getDisplayName(WrappedComponent)})`;
+
+  return WithAuthComponent;
 };
 
-export default WithAuth;
+// Helper function to set display name
+function getDisplayName(WrappedComponent) {
+  return WrappedComponent.displayName || WrappedComponent.name || 'Component';
+}
+
+export default withAuth;

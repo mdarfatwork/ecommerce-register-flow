@@ -132,7 +132,7 @@ const Page = () => {
       setOTPError("Incorrect OTP. Please try again.");
     }
     setIsLoading(false);
-  }, [enteredOTP, OTP, router]);
+  }, [enteredOTP, OTP, router, data]);
 
   const handleInputChange = useCallback(
     (index, value, event) => {

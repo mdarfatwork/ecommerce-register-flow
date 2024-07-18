@@ -121,7 +121,7 @@ const Login = () => {
       </form>
       <hr className="border w-full my-6 md:my-8 lg:my-10" />
       <div className="text-[#848484] -mt-2 mb-4">
-        Don't have an Account? <span className="text-black font-semibold"><Link href="/signup">SIGN UP</Link></span>
+        Don&apos;t have an Account? <span className="text-black font-semibold"><Link href="/signup">SIGN UP</Link></span>
       </div>
     </div>
   );
