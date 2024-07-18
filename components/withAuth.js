@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/firebase';
 
-const withAuth = (WrappedComponent) => {
+const WithAuth = (WrappedComponent) => {
   return (props) => {
     const [loading, setLoading] = useState(true);
     const [authenticated, setAuthenticated] = useState(false);
@@ -18,7 +18,7 @@ const withAuth = (WrappedComponent) => {
         }
         setLoading(false);
       });
-    }, []);
+    }, [router]);
 
     if (loading) {
       return <p>Loading...</p>;
@@ -32,4 +32,4 @@ const withAuth = (WrappedComponent) => {
   };
 };
 
-export default withAuth;
+export default WithAuth;

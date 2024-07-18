@@ -11,7 +11,7 @@ const Loader = dynamic(() => import("@/components/Loader"), {
   loading: () => <p>Loading...</p>,
 });
 
-const page = () => {
+const Page = () => {
   const [showVerifyForm, setShowVerifyForm] = useState(false);
   const [data, setData] = useState();
   const [OTP, setOTP] = useState(null);
@@ -279,4 +279,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

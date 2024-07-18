@@ -7,7 +7,7 @@ import {
   MdOutlineKeyboardDoubleArrowLeft,
   MdOutlineKeyboardDoubleArrowRight,
 } from "react-icons/md";
-import withAuth from "@/components/withAuth";
+import WithAuth from "@/components/withAuth";
 import { auth } from "@/firebase";
 import { useRouter } from "next/navigation";
 
@@ -33,7 +33,7 @@ const Home = () => {
     };
 
     fetchUserEmail();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (userEmail) {
@@ -178,4 +178,4 @@ const Home = () => {
   );
 };
 
-export default withAuth(Home);
+export default WithAuth(Home);

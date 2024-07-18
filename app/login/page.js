@@ -11,7 +11,7 @@ const Loader = dynamic(() => import("@/components/Loader"), {
   loading: () => <p>Loading...</p>,
 });
 
-const login = () => {
+const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPass, setshowPass] = useState(false);
   const {
@@ -67,7 +67,7 @@ const login = () => {
       console.error(error);
     }
     setIsLoading(false)
-  }, []);
+  }, [router]);
 
   return (
     <div className="w-11/12 sm:w-10/12 md:w-3/4 lg:w-3/5 xl:w-2/4 2xl:w-2/5 max-w-[550px] mx-auto my-5 lg:my-7 rounded-xl lg:rounded-2xl border-2 p-5 md:p-7 lg:p-10 xl:p-12 flex flex-col justify-between items-center">
@@ -127,4 +127,4 @@ const login = () => {
   );
 };
 
-export default login;
+export default Login;
