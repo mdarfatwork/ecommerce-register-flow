@@ -24,7 +24,7 @@ function generateVerificationCode(length) {
   return code;
 }
 
-const emailTemplate = fs.readFileSync(`https://ecommerce-register-flow-hz8vq3ntu-mdarfatworks-projects.vercel.app/template/email.html`, "utf-8");
+const emailTemplate = fs.readFileSync(`./public/template/email.html`, "utf-8");
 
 export async function POST(req) {
   try {
