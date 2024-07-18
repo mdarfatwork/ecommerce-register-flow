@@ -24,7 +24,7 @@ function generateVerificationCode(length) {
   return code;
 }
 
-const emailTemplate = fs.readFileSync("./template/email.html", "utf-8");
+const emailTemplate = fs.readFileSync("./public/template/email.html", "utf-8");
 
 export async function POST(req) {
   try {
