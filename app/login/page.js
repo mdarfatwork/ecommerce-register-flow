@@ -42,7 +42,7 @@ const Login = () => {
       }
     };
     fetchUserEmail();
-  }, []);
+  }, [router]);
 
   const onSubmit = useCallback(async (formData) => {
     setIsLoading(true)

@@ -55,7 +55,7 @@ const Page = () => {
       }
     };
     fetchUserEmail();
-  }, []);
+  }, [router]);
 
   const onSubmit = useCallback(async (formData) => {
     setIsLoading(true);
