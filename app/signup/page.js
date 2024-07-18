@@ -49,7 +49,7 @@ const Page = () => {
     const fetchUserEmail = async () => {
       try {
         const user = await auth.currentUser;
-        user && router.push("/login")
+        user && router.push("/")
       } catch (error) {
         console.error("Error fetching user email:", error);
       }
