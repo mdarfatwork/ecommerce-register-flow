@@ -46,6 +46,15 @@ const Page = () => {
       );
       document.head.appendChild(newMetaTag);
     }
+    const fetchUserEmail = async () => {
+      try {
+        const user = await auth.currentUser;
+        user && router.push("/login")
+      } catch (error) {
+        console.error("Error fetching user email:", error);
+      }
+    };
+    fetchUserEmail();
   }, []);
 
   const onSubmit = useCallback(async (formData) => {

@@ -33,6 +33,15 @@ const Login = () => {
       newMetaTag.setAttribute('content', "Login to Arfat Ecommerce to explore and mark your interests in categories like Shoes, Men’s T-shirts, and more. Customize your shopping experience effortlessly.");
       document.head.appendChild(newMetaTag);
     }
+    const fetchUserEmail = async () => {
+      try {
+        const user = await auth.currentUser;
+        user && router.push("/login")
+      } catch (error) {
+        console.error("Error fetching user email:", error);
+      }
+    };
+    fetchUserEmail();
   }, []);
 
   const onSubmit = useCallback(async (formData) => {
@@ -53,7 +62,6 @@ const Login = () => {
         const password = formData.password;
         await signInWithEmailAndPassword(auth, email, password);
         const user = await auth.currentUser;
-        console.log(user)
         if (user) {
           router.push("/")
           setIsLoading(false)
